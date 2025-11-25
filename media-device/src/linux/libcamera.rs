@@ -28,6 +28,7 @@ use libcamera::framebuffer::AsFrameBuffer;
 use libcamera::framebuffer_allocator::FrameBuffer;
 use libcamera::framebuffer_map::MemoryMappedFrameBuffer;
 use libcamera::properties::Model;
+use log::{debug, error, info};
 use media_core::{
     error::Error,
     frame::Frame,
@@ -337,10 +338,10 @@ impl LinuxCameraWorker {
                             continue
                         };
 
-                        println!("Frame Duration. Min: {:?}, Max: {:?}, Default: {:?}",
-                                 frame_duration_limits.min(),
-                                 frame_duration_limits.max(),
-                                 frame_duration_limits.def(),
+                        debug!("Frame Duration. Min: {:?}, Max: {:?}, Default: {:?}",
+                             frame_duration_limits.min(),
+                             frame_duration_limits.max(),
+                             frame_duration_limits.def(),
                         );
 
                         // there really must be a better way of doing this...
@@ -525,7 +526,6 @@ impl LinuxCameraWorker {
 
                         // Enqueue all requests to the camera
                         for req in reqs {
-                            println!("Request queued for execution: {req:#?}");
                             camera.queue_request(req).unwrap();
                         }
 
@@ -636,7 +636,7 @@ impl LinuxCameraWorker {
                         }
 
                         if let Err(e) = camera.queue_request(req) {
-                            eprintln!("queue_request failed: {:?}", e);
+                            error!("queue_request failed: {:?}", e);
                             break;
                         }
                     } else {
@@ -651,8 +651,7 @@ impl LinuxCameraWorker {
         instance.config.validate();
         let result = instance.camera.as_mut().unwrap().configure(&mut instance.config);
 
-        // XXX
-        println!("config: {:?}", instance.config);
+        info!("camera: {}, config: {:?}", instance.pending_camera.id(), instance.config);
 
         instance.config_applied = true;
         result
